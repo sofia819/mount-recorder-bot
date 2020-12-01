@@ -25,14 +25,13 @@ client.on('message', async (message) => {
               (userMount) => !userMount.owned
             );
             if (usersLackingMount.length > 0) {
-              const results =
-                'User who still need ' +
-                usersLackingMount[0].mount_name +
-                '\n' +
-                usersLackingMount
-                  .map((userMount) => userMount.username)
-                  .sort((a, b) => a.localeCompare(b))
-                  .join('\n');
+              const results = `Users who still need ${
+                usersLackingMount[0].mount_name
+              }:\n${usersLackingMount
+                .map((userMount) => userMount.username)
+                .sort((a, b) => a.localeCompare(b))
+                .join('\n')}`;
+
               message.channel.send(results);
             }
           })
