@@ -1,0 +1,25 @@
+{
+  "name": "mount_recorder_bot",
+  "version": "1.0.0",
+  "description": "A Discord bot that queries the Mount Recorder API",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sofia819/mount_recorder_bot.git"
+  },
+  "author": "Sofia Lee",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sofia819/mount_recorder_bot/issues"
+  },
+  "homepage": "https://github.com/sofia819/mount_recorder_bot#readme",
+  "dependencies": {
+    "discord.js": "^12.5.1",
+    "dotenv": "^8.2.0",
+    "node-fetch": "^2.6.1"
+  }
+}
