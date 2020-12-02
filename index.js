@@ -38,3 +38,9 @@ client.on('message', async (message) => {
       : message.channel.send('Format error: ' + '!mount mountId');
   }
 });
+
+client.on('ready', () => {
+  setInterval(() => {
+    console.log('It has been 15 minutes');
+  }, FIFTEEN_MINUTES);
+});
