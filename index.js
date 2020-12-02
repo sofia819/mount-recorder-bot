@@ -31,7 +31,7 @@ client.on('message', async (message) => {
                 .map((userMount) => userMount.username)
                 .sort((a, b) => a.localeCompare(b))
                 .join('\n')}`;
-
+              console.log(results);
               message.channel.send(results);
             }
           })
