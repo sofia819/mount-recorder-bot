@@ -1,7 +1,7 @@
 require('dotenv').config();
 const Discord = require('discord.js');
 const fetch = require('node-fetch');
-const { API_ENDPOINT_USER_MOUNT } = require('./constants');
+const { API_ENDPOINT_USER_MOUNT, FIFTEEN_MINUTES } = require('./constants');
 const { formatApiEndpoint } = require('./utils');
 
 const client = new Discord.Client();
