@@ -1,46 +1,61 @@
 require('dotenv').config();
 const Discord = require('discord.js');
 const fetch = require('node-fetch');
-const { API_ENDPOINT_USER_MOUNT, FIFTEEN_MINUTES } = require('./constants');
-const { formatApiEndpoint } = require('./utils');
+const {
+  API_ENDPOINT_MOUNT,
+  API_ENDPOINT_USER_MOUNT,
+  FIFTEEN_MINUTES,
+  FIFTEEN_MINUTES_MESSAGE,
+  MOUNT_COMMAND_PREFIX,
+  MOUNT_NOT_EXIST,
+  FORMAT_ERROR,
+} = require('./constants');
+const { formatApiEndpoint, formatMountLackingUserResults } = require('./utils');
 
 const client = new Discord.Client();
+let mountNames;
 
-client.once('ready', () => {
+client.once('ready', async () => {
+  mountNames = await fetch(API_ENDPOINT_MOUNT)
+    .then((res) => res.json())
+    .then((data) => data.map((mount) => mount.mount_name));
   console.log('Mount Recorder Bot is ready!');
 });
 
 client.login(process.env.BOT_TOKEN);
 
 client.on('message', async (message) => {
-  if (!message.author.bot && message.content.startsWith('!mount')) {
+  if (!message.author.bot && message.content.startsWith(MOUNT_COMMAND_PREFIX)) {
     const usersLackingMount = message.content.split(' ');
-    usersLackingMount.length == 2
-      ? await fetch(
-          formatApiEndpoint(API_ENDPOINT_USER_MOUNT, usersLackingMount[1])
-        )
+    if (usersLackingMount.length == 2 && usersLackingMount[1].length > 0) {
+      const mountId =
+        mountNames.findIndex(
+          (mountName) =>
+            mountName.toLowerCase() === usersLackingMount[1].toLowerCase()
+        ) + 1;
+      if (mountId > 0) {
+        await fetch(formatApiEndpoint(API_ENDPOINT_USER_MOUNT, mountId))
           .then((res) => res.json())
           .then((data) => {
-            const usersLackingMount = data.filter(
-              (userMount) => !userMount.owned
-            );
             if (usersLackingMount.length > 0) {
-              const results = `Users who still need ${
-                usersLackingMount[0].mount_name
-              }:\n${usersLackingMount
-                .map((userMount) => userMount.username)
-                .sort((a, b) => a.localeCompare(b))
-                .join('\n')}`;
+              const results = formatMountLackingUserResults(
+                data.filter((userMount) => !userMount.owned)
+              );
               console.log(results);
               message.channel.send(results);
             }
-          })
-      : message.channel.send('Format error: ' + '!mount mountId');
+          });
+      } else {
+        message.channel.send(MOUNT_NOT_EXIST);
+      }
+    } else {
+      message.channel.send(FORMAT_ERROR);
+    }
   }
 });
 
 client.on('ready', () => {
   setInterval(() => {
-    console.log('It has been 15 minutes');
+    console.log(FIFTEEN_MINUTES_MESSAGE);
   }, FIFTEEN_MINUTES);
 });
