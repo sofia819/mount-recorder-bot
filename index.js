@@ -3,53 +3,86 @@ const Discord = require('discord.js');
 const fetch = require('node-fetch');
 const {
   API_ENDPOINT_MOUNT,
-  API_ENDPOINT_USER_MOUNT,
+  API_ENDPOINT_USER,
+  API_ENDPOINT_USER_MOUNT_MOUNT,
+  API_ENDPOINT_USER_MOUNT_USER,
   FIFTEEN_MINUTES,
   FIFTEEN_MINUTES_MESSAGE,
   MOUNT_COMMAND_PREFIX,
-  MOUNT_NOT_EXIST,
+  USER_COMMAND_PREFIX,
+  KEYWORD_NOT_EXIST,
   FORMAT_ERROR,
 } = require('./constants');
-const { formatApiEndpoint, formatMountLackingUserResults } = require('./utils');
+const {
+  formatApiEndpoint,
+  formatMountResponse,
+  formatUserResponse,
+  fetchKeywordId,
+} = require('./utils');
 
 const client = new Discord.Client();
-let mountNames;
+let mounts;
+let users;
 
 client.once('ready', async () => {
-  mountNames = await fetch(API_ENDPOINT_MOUNT)
+  mounts = await fetch(API_ENDPOINT_MOUNT)
     .then((res) => res.json())
-    .then((data) => data.map((mount) => mount.mount_name));
+    .then((data) =>
+      data.map((mount) => {
+        return {
+          id: mount.mount_id,
+          name: mount.mount_name,
+        };
+      })
+    );
+  users = await fetch(API_ENDPOINT_USER)
+    .then((res) => res.json())
+    .then((data) =>
+      data.map((user) => {
+        return { id: user.user_id, name: user.username };
+      })
+    );
   console.log('Mount Recorder Bot is ready!');
 });
 
 client.login(process.env.BOT_TOKEN);
 
 client.on('message', async (message) => {
-  if (!message.author.bot && message.content.startsWith(MOUNT_COMMAND_PREFIX)) {
-    const usersLackingMount = message.content.split(' ');
-    if (usersLackingMount.length == 2 && usersLackingMount[1].length > 0) {
-      const mountId =
-        mountNames.findIndex(
-          (mountName) =>
-            mountName.toLowerCase() === usersLackingMount[1].toLowerCase()
-        ) + 1;
-      if (mountId > 0) {
-        await fetch(formatApiEndpoint(API_ENDPOINT_USER_MOUNT, mountId))
-          .then((res) => res.json())
-          .then((data) => {
-            if (usersLackingMount.length > 0) {
-              const results = formatMountLackingUserResults(
-                data.filter((userMount) => !userMount.owned)
-              );
+  if (!message.author.bot) {
+    const commandContent = message.content.split(' ');
+    if (commandContent.length >= 2 && commandContent[1].length > 0) {
+      let idToQuery;
+      let ApiEndpoint;
+
+      if (message.content.startsWith(MOUNT_COMMAND_PREFIX)) {
+        idToQuery = fetchKeywordId(mounts, commandContent);
+        ApiEndpoint = API_ENDPOINT_USER_MOUNT_MOUNT;
+        if (idToQuery > 0) {
+          await fetch(formatApiEndpoint(ApiEndpoint, idToQuery))
+            .then((res) => res.json())
+            .then((data) => {
+              const results = formatMountResponse(data);
               console.log(results);
               message.channel.send(results);
-            }
-          });
-      } else {
-        message.channel.send(MOUNT_NOT_EXIST);
+            });
+        } else {
+          message.channel.send(KEYWORD_NOT_EXIST);
+        }
+      } else if (message.content.startsWith(USER_COMMAND_PREFIX)) {
+        idToQuery = fetchKeywordId(users, commandContent);
+        ApiEndpoint = API_ENDPOINT_USER_MOUNT_USER;
+        if (idToQuery > 0) {
+          await fetch(formatApiEndpoint(ApiEndpoint, idToQuery))
+            .then((res) => res.json())
+            .then((data) => {
+              const results = formatUserResponse(data);
+              console.log(results);
+              message.channel.send(results);
+            });
+        } else {
+          message.channel.send(KEYWORD_NOT_EXIST);
+        }
       }
-    } else {
-      message.channel.send(FORMAT_ERROR);
     }
   }
 });
