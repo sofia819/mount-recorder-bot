@@ -13,8 +13,15 @@ const formatUserResponse = (mountsUserLacking) =>
     .map((mount) => mount.mount_name)
     .join('\n')}`;
 
+const formatAddUserMessage = (username, success) =>
+  success
+    ? `User ${username} has been added.`
+    : `User ${username} was not added.`;
+
+const formatParam = (commandContent) => commandContent.slice(1).join(' ');
+
 const fetchKeywordId = (arr, commandContent) => {
-  const keyword = commandContent.slice(1).join(' ');
+  const keyword = formatParam(commandContent);
   const found = arr.find(
     (val) => val.name.toLowerCase() === keyword.toLowerCase()
   );
@@ -25,5 +32,7 @@ module.exports = {
   formatApiEndpoint,
   formatMountResponse,
   formatUserResponse,
+  formatAddUserMessage,
+  formatParam,
   fetchKeywordId,
 };

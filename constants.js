@@ -18,6 +18,8 @@ const MOUNT_COMMAND_PREFIX = '!mrmount';
 
 const USER_COMMAND_PREFIX = '!mruser';
 
+const ADD_USER_COMMAND_PREFIX = '!mradd';
+
 const KEYWORD_NOT_EXIST = "The keyword specified doesn't exist.";
 
 const FORMAT_ERROR =
@@ -33,6 +35,7 @@ module.exports = {
   FIFTEEN_MINUTES_MESSAGE,
   USER_COMMAND_PREFIX,
   MOUNT_COMMAND_PREFIX,
+  ADD_USER_COMMAND_PREFIX,
   KEYWORD_NOT_EXIST,
   FORMAT_ERROR,
 };

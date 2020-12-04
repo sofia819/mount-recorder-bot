@@ -10,13 +10,15 @@ const {
   FIFTEEN_MINUTES_MESSAGE,
   MOUNT_COMMAND_PREFIX,
   USER_COMMAND_PREFIX,
+  ADD_USER_COMMAND_PREFIX,
   KEYWORD_NOT_EXIST,
-  FORMAT_ERROR,
 } = require('./constants');
 const {
   formatApiEndpoint,
   formatMountResponse,
   formatUserResponse,
+  formatAddUserMessage,
+  formatParam,
   fetchKeywordId,
 } = require('./utils');
 
@@ -79,9 +81,30 @@ client.on('message', async (message) => {
               console.log(results);
               message.channel.send(results);
             });
-        } else {
-          message.channel.send(KEYWORD_NOT_EXIST);
         }
+      } else if (message.content.startsWith(ADD_USER_COMMAND_PREFIX)) {
+        ApiEndpoint = API_ENDPOINT_USER;
+        const username = formatParam(commandContent);
+        const body = {
+          username,
+        };
+        console.log(body);
+        await fetch(ApiEndpoint, {
+          method: 'POST',
+          body: JSON.stringify(body),
+          headers: { 'Content-Type': 'application/json' },
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            const success = data.length > 0;
+            message.channel.send(formatAddUserMessage(username, success));
+            if (success) {
+              users.push({ id: data[0].user_id, name: data[0].username });
+              console.log(username);
+            }
+          });
+      } else {
+        message.channel.send(KEYWORD_NOT_EXIST);
       }
     }
   }
