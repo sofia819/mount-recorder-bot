@@ -20,8 +20,7 @@ const formatAddUserMessage = (username, success) =>
 
 const formatParam = (commandContent) => commandContent.slice(1).join(' ');
 
-const fetchKeywordId = (arr, commandContent) => {
-  const keyword = formatParam(commandContent);
+const fetchKeywordId = (arr, keyword) => {
   const found = arr.find(
     (val) => val.name.toLowerCase() === keyword.toLowerCase()
   );

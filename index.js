@@ -51,16 +51,25 @@ client.login(process.env.BOT_TOKEN);
 
 client.on('message', async (message) => {
   if (!message.author.bot) {
+    // Split the command into array elements
     const commandContent = message.content.split(' ');
-    if (commandContent.length >= 2 && commandContent[1].length > 0) {
-      let idToQuery;
-      let ApiEndpoint;
+    // Format the rest of the command into a single keyword
+    const keyword = formatParam(
+      commandContent.length >= 2 ? commandContent : []
+    );
+    // Check if the command and the keyword have valid lengths
+    const validCommandLength = commandContent.length >= 2 && keyword.length > 0;
 
+    let idToQuery;
+
+    // For searching with a mount keyword
+    if (validCommandLength) {
       if (message.content.startsWith(MOUNT_COMMAND_PREFIX)) {
-        idToQuery = fetchKeywordId(mounts, commandContent);
-        ApiEndpoint = API_ENDPOINT_USER_MOUNT_MOUNT;
+        idToQuery = fetchKeywordId(mounts, keyword);
         if (idToQuery > 0) {
-          await fetch(formatApiEndpoint(ApiEndpoint, idToQuery))
+          await fetch(
+            formatApiEndpoint(API_ENDPOINT_USER_MOUNT_MOUNT, idToQuery)
+          )
             .then((res) => res.json())
             .then((data) => {
               const results = formatMountResponse(data);
@@ -70,27 +79,30 @@ client.on('message', async (message) => {
         } else {
           message.channel.send(KEYWORD_NOT_EXIST);
         }
+        // For searching with a username keyword
       } else if (message.content.startsWith(USER_COMMAND_PREFIX)) {
-        idToQuery = fetchKeywordId(users, commandContent);
-        ApiEndpoint = API_ENDPOINT_USER_MOUNT_USER;
+        idToQuery = fetchKeywordId(users, keyword);
         if (idToQuery > 0) {
-          await fetch(formatApiEndpoint(ApiEndpoint, idToQuery))
+          await fetch(
+            formatApiEndpoint(API_ENDPOINT_USER_MOUNT_USER, idToQuery)
+          )
             .then((res) => res.json())
             .then((data) => {
               const results = formatUserResponse(data);
               console.log(results);
               message.channel.send(results);
             });
+        } else {
+          message.channel.send(KEYWORD_NOT_EXIST);
         }
+        // For adding a new user
       } else if (message.content.startsWith(ADD_USER_COMMAND_PREFIX)) {
-        ApiEndpoint = API_ENDPOINT_USER;
         const username = formatParam(commandContent);
-        const body = {
-          username,
-        };
-        await fetch(ApiEndpoint, {
+        await fetch(API_ENDPOINT_USER, {
           method: 'POST',
-          body: JSON.stringify(body),
+          body: JSON.stringify({
+            username,
+          }),
           headers: { 'Content-Type': 'application/json' },
         })
           .then((res) => res.json())
@@ -102,8 +114,6 @@ client.on('message', async (message) => {
               console.log(username);
             }
           });
-      } else {
-        message.channel.send(KEYWORD_NOT_EXIST);
       }
     }
   }
