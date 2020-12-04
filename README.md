@@ -28,10 +28,6 @@ Environment
 
 - [Node.js](https://nodejs.org/en/)
 
-Framework
-
-- [Express.js](https://expressjs.com/)
-
 Libraries
 
 - [discord.js](https://discord.js.org/#/)
