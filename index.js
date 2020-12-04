@@ -88,7 +88,6 @@ client.on('message', async (message) => {
         const body = {
           username,
         };
-        console.log(body);
         await fetch(ApiEndpoint, {
           method: 'POST',
           body: JSON.stringify(body),
